@@ -14,11 +14,12 @@ import * as layers from './layer/index'
 import * as effects from './effect/index'
 import * as event from './event'
 import * as util from './util'
+import mapImplementation from './implementation/helpers/mapImplementation';
 
-export default {
+export default mapImplementation({
   Movie: Movie,
   layer: layers,
   effect: effects,
   event,
   ...util
-}
+});

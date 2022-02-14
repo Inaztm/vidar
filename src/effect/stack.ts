@@ -16,12 +16,14 @@ class Stack extends BaseEffect {
 
     this._effectsBack = []
     this.effects = new Proxy(this._effectsBack, {
+      // @ts-ignore
       deleteProperty: function (target: BaseEffect[], property: number | string): boolean {
         const value = target[property]
         value.detach() // Detach effect from movie
         delete target[property]
         return true
       },
+      // @ts-ignore
       set: function (target: BaseEffect[], property: number | string, value: BaseEffect): boolean {
         // TODO: make sure type check works
         if (!isNaN(Number(property))) { // if property is a number (index)

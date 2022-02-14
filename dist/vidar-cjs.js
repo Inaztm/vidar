@@ -114,6 +114,7 @@ function publish(target, type, event) {
 var listeners = new WeakMap();
 
 var event = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     subscribe: subscribe,
     publish: publish
 });
@@ -389,7 +390,7 @@ var Color = /** @class */ (function () {
      * Converts to a CSS color
      */
     Color.prototype.toString = function () {
-        return "rgba(" + this.r + ", " + this.g + ", " + this.b + ", " + this.a + ")";
+        return "rgba(".concat(this.r, ", ").concat(this.g, ", ").concat(this.b, ", ").concat(this.a, ")");
     };
     return Color;
 }());
@@ -449,7 +450,7 @@ var Font = /** @class */ (function () {
             s += this.weight + ' ';
         if (this.stretch !== 'normal')
             s += this.stretch + ' ';
-        s += "" + this.size + this.sizeUnit + " ";
+        s += "".concat(this.size).concat(this.sizeUnit, " ");
         if (this.lineHeight !== 'normal')
             s += this.lineHeight + ' ';
         s += this.family;
@@ -466,7 +467,7 @@ var parseFontEl = document.createElement('div');
  */
 function parseFont(str) {
     // Assign css string to html element
-    parseFontEl.setAttribute('style', "font: " + str);
+    parseFontEl.setAttribute('style', "font: ".concat(str));
     var _a = parseFontEl.style, fontSize = _a.fontSize, fontFamily = _a.fontFamily, fontStyle = _a.fontStyle, fontVariant = _a.fontVariant, fontWeight = _a.fontWeight, lineHeight = _a.lineHeight;
     parseFontEl.removeAttribute('style');
     var size = parseFloat(fontSize);
@@ -511,7 +512,7 @@ function watchPublic(target) {
     };
     var callback = function (prop, val, receiver) {
         // Public API property updated, emit 'modify' event.
-        publish(proxy, target.type + ".change.modify", { property: getPath(receiver, prop), newValue: val });
+        publish(proxy, "".concat(target.type, ".change.modify"), { property: getPath(receiver, prop), newValue: val });
     };
     var check = function (prop) { return !(prop.startsWith('_') || target.publicExcludes.includes(prop)); };
     // The path to each child property (each is a unique proxy)
@@ -552,6 +553,7 @@ function watchPublic(target) {
 }
 
 var util = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     applyOptions: applyOptions,
     clearCachedValues: clearCachedValues,
     KeyFrame: KeyFrame,
@@ -800,7 +802,7 @@ var Base = /** @class */ (function () {
         // Propogate up to target
         subscribe(newThis, 'layer.change', function (event) {
             var typeOfChange = event.type.substring(event.type.lastIndexOf('.') + 1);
-            var type = "movie.change.layer." + typeOfChange;
+            var type = "movie.change.layer.".concat(typeOfChange);
             publish(newThis._movie, type, __assign(__assign({}, event), { target: newThis._movie, type: type }));
         });
         return newThis;
@@ -1385,6 +1387,7 @@ var Video = /** @class */ (function (_super) {
  */
 
 var layers = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     AudioSourceMixin: AudioSourceMixin,
     Audio: Audio,
     Base: Base,
@@ -2042,7 +2045,7 @@ var Base$1 = /** @class */ (function () {
             if (!newThis._target) {
                 return;
             }
-            var type = newThis._target.type + ".change.effect.modify";
+            var type = "".concat(newThis._target.type, ".change.effect.modify");
             publish(newThis._target, type, __assign(__assign({}, event), { target: newThis._target, source: newThis, type: type }));
         });
         return newThis;
@@ -2158,7 +2161,7 @@ var Shader = /** @class */ (function (_super) {
                  * object.
                  */
                 if (userUniforms[name_1]) {
-                    throw new Error("Texture - uniform naming conflict: " + name_1 + "!");
+                    throw new Error("Texture - uniform naming conflict: ".concat(name_1, "!"));
                 }
                 // Add this as a "user uniform".
                 userUniforms[name_1] = '1i'; // texture pointer
@@ -2373,7 +2376,7 @@ var Shader = /** @class */ (function (_super) {
                     value.b !== undefined ? value.b : def
                 ];
             }
-            throw new Error("Invalid type: " + outputType + " or value: " + value);
+            throw new Error("Invalid type: ".concat(outputType, " or value: ").concat(value));
         }
         if (outputType === '4fv') {
             if (Array.isArray(value) && value.length === 4) {
@@ -2388,7 +2391,7 @@ var Shader = /** @class */ (function (_super) {
                     value.a !== undefined ? value.a : def
                 ];
             }
-            throw new Error("Invalid type: " + outputType + " or value: " + value);
+            throw new Error("Invalid type: ".concat(outputType, " or value: ").concat(value));
         }
         return value;
     };
@@ -2718,12 +2721,14 @@ var Stack = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this._effectsBack = [];
         _this.effects = new Proxy(_this._effectsBack, {
+            // @ts-ignore
             deleteProperty: function (target, property) {
                 var value = target[property];
                 value.detach(); // Detach effect from movie
                 delete target[property];
                 return true;
             },
+            // @ts-ignore
             set: function (target, property, value) {
                 // TODO: make sure type check works
                 if (!isNaN(Number(property))) { // if property is a number (index)
@@ -2859,7 +2864,7 @@ var GaussianBlurComponent = /** @class */ (function (_super) {
     };
     GaussianBlurComponent._genPascalRow = function (index) {
         if (index < 0) {
-            throw new Error("Invalid index " + index);
+            throw new Error("Invalid index ".concat(index));
         }
         var currRow = [1];
         for (var i = 1; i < index; i++) {
@@ -3131,6 +3136,7 @@ var Transform$1 = Transform;
  */
 
 var effects = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     Base: Base$1,
     Brightness: Brightness,
     Channels: Channels,
@@ -3147,10 +3153,753 @@ var effects = /*#__PURE__*/Object.freeze({
     Transform: Transform$1
 });
 
+const fieldsToObject = /* @ngInject */ () => (value) => (value || [])
+  .filter(t => t.exportField)
+  .reduce((acc, item) => {
+    acc[item.exportField.name] = item.content;
+    return acc;
+  }, {});
+
+function uuidv4() {
+    const hex = "0123456789ABCDEF";
+    const model = "xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx";
+    var str = "";
+    for (var i = 0; i < model.length; i++) {
+      var rnd = Math.floor(Math.random() * hex.length);
+      str += model[i] == "x" ?  hex[rnd] : model[i] ;
+    }
+    return str.toLowerCase();
+}
+
+const getText = (data) => data ? data.text || data : '';
+
+const trySetAnimationText = (layer, data) => {
+    const layerKey = 'nm';
+    if (!layer || !layer.elements || !layer.elements.length) {
+        return;
+    }
+    layer.elements
+        .filter(el => el)
+        .forEach(el => {
+            const key = el.data && el.data[layerKey];
+            const value = data && data[key];
+            if (value) {
+                const text = getText(value);
+                el.canResizeFont(true);
+                el.updateDocumentData({ t: text }, 0);
+            }
+            trySetAnimationText(el, data);
+        });
+};
+
+const createAnimationWrapper = (type = 'div') => {
+    const wrapper = document.createElement(type);
+    wrapper.id = `vd-title-wrapper-${uuidv4()}`;
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '-9999px';
+    document.body.appendChild(wrapper);
+    return wrapper;
+};
+
+const createAnimation = (bodymovin, options, wrapper = createAnimationWrapper()) => {
+    if (!bodymovin) {
+        return null;
+    }
+    return bodymovin.loadAnimation(Object.assign({}, {
+        container: wrapper,
+        renderer: 'svg',
+        loop: false,
+        autoplay: false,
+    }, options));
+};
+
+const symbols = /[\r\n%#()<>?[\\\]^`{|}]/g;
+
+const addNameSpace = (data) => {
+    if (data.indexOf('http://www.w3.org/2000/svg') < 0) {
+        data = data.replace(/<svg/g, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+
+    return data;
+};
+  
+const encodeSVG = (data, externalQuotesValue = 'double') => {
+    let result = data;
+    // Use single quotes instead of double to avoid encoding.
+    if (externalQuotesValue === 'double') {
+        result = result.replace(/"/g, '\'');
+    } else {
+        result = result.replace(/'/g, '"');
+    }
+  
+    result = result.replace(/>\s{1,}</g, '><');
+    result = result.replace(/\s{2,}/g, ' ');
+  
+    // Using encodeURIComponent() as replacement function
+    // allows to keep result code readable
+    return result.replace(symbols, encodeURIComponent);
+};
+
+const renderAnimationFrame = (animation, el, time) => {
+    animation.goToAndStop(time * animation.frameRate, true);
+    const imageEncoded = encodeSVG(addNameSpace(animation.renderer.svgElement.outerHTML));
+    el.src = `data:image/svg+xml,${imageEncoded}`;
+};
+
+const w = 560;
+const h = 360;
+
+const Vector2 = (x, y) => ({ x, y });
+
+const TYPE_MEDIA = 'media';
+const TYPE_TITLE = 'title';
+const TYPE_AUDIO = 'audio';
+
+const ACCEPT_RAITO_16_9 = '16x9';
+const ACCEPT_RAITO_9_16 = '9x16';
+const ACCEPT_RAITO_1_1 = '1x1';
+const ACCEPT_RAITO_4_5 = '4x5';
+const ACCEPT_RAITO_2_3 = '2x3';
+
+const acceptRaitoVariants = [
+    {
+        type: ACCEPT_RAITO_16_9,
+        size: Vector2(558.2222222222222, 314),
+        recordSize: Vector2(1920, 1080),
+    },
+    {
+        type: ACCEPT_RAITO_9_16,
+        size: Vector2(176.625, 314),
+        recordSize: Vector2(1080, 1920),
+    },
+    {
+        type: ACCEPT_RAITO_1_1,
+        size: Vector2(314, 314),
+        recordSize: Vector2(1080, 1080),
+    },
+    {
+        type: ACCEPT_RAITO_4_5,
+        size: Vector2(251.20000000000002, 314),
+        recordSize: Vector2(1080, 1350),
+    },
+    {
+        type: ACCEPT_RAITO_2_3,
+        size: Vector2(209.33333333333331, 314),
+        recordSize: Vector2(1080, 1620),
+    },
+    // { type: ACCEPT_RAITO_21_9, size: { x: 732.6666666666667, y: 314 }},
+];
+
+const ACCEPT_MODE_FIT = 'fit';
+const ACCEPT_MODE_FILL = 'fill';
+
+const getAcceptRaitoByType = (type) => acceptRaitoVariants
+    .find(t => t.type === type);
+
+const setSizeEl = (el, _w = w, _h = h) => {
+    el.width = _w;
+    el.height = _h;
+};
+// eslint-disable-next-line no-unused-vars
+const createMediaEl = (src, type, _w, _h) => {
+    const el = document.createElement(type);
+    if (_w && _h) {
+        setSizeEl(el, _w, _h);
+    }
+    el.src = src;
+    el.crossOrigin = 'anonymous';
+    return el;
+};
+
+const fitIn = (canvas, el) => {
+    const wrh = el.width / el.height;
+    let width = canvas.width;
+    let height = width / wrh;
+    if (height > canvas.height) {
+        height = canvas.height;
+        width = height * wrh;
+    }
+    return { width, height };
+};
+
+const scaleTo = (target, container, hasFill = false) => {
+    const { w: tW, h: tH } = target;
+    const { w: cW, h: cH } = container;
+    // get the scale
+    const calcHundle = hasFill ? Math.max : Math.min;
+    const scale = calcHundle(cW / tW, cH / tH);
+    // get the top left position of the image
+    const x = (cW / 2) - (tW / 2) * scale;
+    const y = (cH / 2) - (tH / 2) * scale;
+    const width = tW * scale;
+    const height = tH * scale;
+    return {
+        destX: x,
+        destY: y,
+        destWidth: width,
+        destHeight: height,
+        x: 0,
+        y: 0,
+        width: tW,
+        height: tH,
+    };
+};
+
+const _start = (l) => l.startTime;
+const _end = (l) => l.duration;
+const _full = (l) => _start(l) + _end(l);
+
+var getStoryVisual = (extendFrom) => {
+    return class StoryVisualImpl extends extendFrom {
+        constructor (options) {
+            super(options);
+            this.updateEmetadata('storyboard', []);
+            this.updateEmetadata('storyTargetSource', null);
+            this.updateEmetadata('storyCanvas', document.createElement('canvas'));
+            this.storyCanvas.width = this.storyWidth * 1.1;
+            this.storyCanvas.height = this.storyHeight * 1.1;
+        }
+
+        get storyboard() {
+            return this.emetadata.storyboard;
+        }
+
+        get storyWidth() {
+            return 106.67;
+        }
+
+        get storyHeight() {
+            return 60;
+        }
+
+        get storyTargetSource() {
+            return this.emetadata.storyTargetSource;
+        }
+
+        get storyCanvas() {
+            return this.emetadata.storyCanvas;
+        }
+        
+        get storyCtx() {
+            return this.emetadata.storyCanvas.getContext('2d');
+        }
+
+        pushStory(data) {
+            this.storyboard.push(data);
+        }
+
+        clearStoryboard() {
+            this.updateEmetadata('storyboard', []);
+        }
+
+        renderStory(el, { callback, quality = 0.8 }) {
+            const { width, height } = fitIn(this.storyCanvas, el);
+            this.storyCtx.clearRect(0, 0, this.storyCanvas.width, this.storyCanvas.height);
+            this.storyCtx.drawImage(el, 0, 0, width, height);
+            const src = this.storyCanvas.toDataURL('image/webp', quality);
+            callback(src);
+        }
+    };
+};
+
+var getBase = (extendFrom) => {
+    return class BaseImpl extends extendFrom {
+        constructor (options) {
+            super(options);
+            this._emetadata = {};
+            this.setAssetData(null);
+            this.setAssetType(null);
+            this.setUuid(uuidv4());
+            this.clearGroup();
+        }
+
+        get emetadata() {
+            return this._emetadata;
+        }
+
+        get assetData() {
+            return this.emetadata.assetData;
+        }
+
+        get assetType() {
+            return this.emetadata.assetType;
+        }
+
+        get uuid() {
+            return this.emetadata.uuid;
+        }
+
+        get isCg() {
+            return this.assetType === TYPE_TITLE;
+        }
+
+        get isMedia() {
+            return this.assetType === TYPE_MEDIA;
+        }
+
+        get isAudio() {
+            return this.assetType === TYPE_AUDIO;
+        }
+
+        get group() {
+            return this.emetadata.group;
+        }
+
+        setEmetadata(data) {
+            this._emetadata = data;
+        }
+
+        updateEmetadata(key, value) {
+            this._emetadata[key] = value;
+        }
+
+        setAssetData(data) {
+            this.updateEmetadata('assetData', data);
+        }
+
+        setAssetType(value) {
+            this.updateEmetadata('assetType', value);
+        }
+
+        setUuid(value) {
+            this.updateEmetadata('uuid', value);
+        }
+
+        attachGroup(group) {
+            this.updateEmetadata('group', group);
+        }
+
+        clearGroup() {
+            this.updateEmetadata('group', null);
+        }
+
+        toCalculateData() {
+            return {
+                start: _start(this),
+                full: _full(this),
+                end: _end(this),
+            };
+        }
+
+        static extractOptions(options, optionsToExtract = []) {
+            const extractedOptions = {};
+            Object.keys(options).forEach((key) => {
+                if (optionsToExtract.includes(key)) {
+                    extractedOptions[key] = options[key];
+                    delete options[key];
+                }
+            });
+            return extractedOptions;
+        }
+    };
+};
+
+var getVisual = (extendFrom) => {
+    return class VisualImpl extends getBase(extendFrom) {
+        constructor (options) {
+            super(options);
+            this.setEditable(false);
+            this.setFitMode(ACCEPT_MODE_FIT);
+            this.setFitOverride(null);
+            this.setSourceLoaded(false);
+            this.setupSourceLoaded();
+        }
+
+        get sourceLoaded() {
+            return this.emetadata.sourceLoaded;
+        }
+
+        get fullLoadedSource() {
+            return this.sourceLoaded;
+        }
+
+        get editable() {
+            return this.emetadata.editable;
+        }
+
+        get fitOverride() {
+            return this.emetadata.fitOverride;
+        }
+
+        get fitMode() {
+            return this.emetadata.fitMode;
+        }
+
+        get hasCanFitToCanvas() {
+            return !this.fitOverride && this.movie;
+        }
+
+        get sourceRealSize() {
+            return {
+                width: this.source.width,
+                height: this.source.height,
+            };
+        }
+
+        setSourceLoaded(value) {
+            this.updateEmetadata('sourceLoaded', value);
+        }
+
+        setupSourceLoaded() {
+            this.source.onload = () => {
+                this.setSourceLoaded(true);
+                this.fitToCanvas();
+            };
+        }
+
+        setFitMode(mode = ACCEPT_MODE_FIT) {
+            this.updateEmetadata('fitMode', mode);
+        }
+
+        setEditable(value) {
+            this.updateEmetadata('editable', value);
+        }
+
+        setFitOverride(data = null) {
+            this.updateEmetadata('fitOverride', data);
+        }
+
+        setEditableValues({ x, y, width, height }) {
+            this.setFitOverride({ x, y, width, height });
+            this.fitToCanvas();
+        }
+
+        toEditableValues() {
+            return {
+                x: this.destX,
+                y: this.destY,
+                width: this.destWidth,
+                height: this.destHeight,
+            };
+        }
+
+        getFitScaleValue(baseValue, dir) {
+            return baseValue * this.movie.recordFitMulty[dir];
+        }
+
+        getFitUnScaleValue(baseValue, dir) {
+            return baseValue / this.movie.recordFitMulty[dir];
+        }
+
+        fitToCanvas() {
+            if (!this.hasCanFitToCanvas) {
+                this.fitOverideToCanvas();
+                return;
+            }
+            const { width: cWidth, height: cHeight } = this.movie.canvas;
+            const { width: sWidth, height: sHeight } = this.sourceRealSize;
+            const fitData = scaleTo(
+                { w: sWidth, h: sHeight },
+                {
+                    w: this.getFitUnScaleValue(cWidth, 'x'),
+                    h: this.getFitUnScaleValue(cHeight, 'y')
+                },
+                this.fitMode === ACCEPT_MODE_FILL
+            );
+            this.destWidth = this.getFitScaleValue(fitData.destWidth, 'x');
+            this.destHeight = this.getFitScaleValue(fitData.destHeight, 'y');
+            this.destX = this.getFitScaleValue(fitData.destX, 'x');
+            this.destY = this.getFitScaleValue(fitData.destY, 'y');
+            this.width = this.getFitScaleValue(fitData.width, 'x');
+            this.height = this.getFitScaleValue(fitData.height, 'y');
+            this.x = this.getFitScaleValue(fitData.x, 'x');
+            this.y = this.getFitScaleValue(fitData.y, 'y');
+        }
+
+        fitOverideToCanvas() {
+            if (!this.fitOverride) {
+                return;
+            }
+            const { width: sWidth, height: sHeight } = this.sourceRealSize;
+            this.destWidth = this.getFitScaleValue(this.fitOverride.width, 'x');
+            this.destHeight = this.getFitScaleValue(this.fitOverride.height, 'y');
+            this.destX = this.getFitScaleValue(this.fitOverride.x, 'x');
+            this.destY = this.getFitScaleValue(this.fitOverride.y, 'y');
+            this.width = this.getFitScaleValue(sWidth, 'x');
+            this.height = this.getFitScaleValue(sHeight, 'y');
+            this.x = 0;
+            this.y = 0;
+        }
+    };
+};
+
+var getImage = (Image) => {
+    return class ImageImpl extends getStoryVisual(getVisual(Image)) {
+        constructor (options) {
+            super(options);
+            this.updateEmetadata('storyTargetSource', createMediaEl('', 'img'));
+        }
+    };
+};
+
+var getTitle = (Image) => {
+    return class TitleImpl extends getImage(Image) {
+        constructor (options) {
+            super(options);
+        }
+    };
+};
+
+var getHtmlTitle = (Image, bodymovin) => {
+    return class HtmlTitleImpl extends getTitle(Image) {
+        constructor (options) {
+            const { animationData } = HtmlTitle.extractOptions(options, ['animationData']);
+            super(options);
+            this.updateEmetadata('animation', createAnimation(bodymovin, { animationData }));
+            this.updateEmetadata('storyAnimation', createAnimation(bodymovin, { animationData }));
+
+            const totalSeconds = this.animation.totalFrames / this.animation.frameRate;
+            this.source.duration = totalSeconds;
+
+            if (this.duration > this.source.duration) {
+                this.duration = totalSeconds;
+            }
+            this.setupAnimationSourceLoaded();
+        }
+
+        get storyHeight() {
+            return 55;
+        }
+
+        get animation() {
+            return this.emetadata.animation;
+        }
+
+        get storyAnimation() {
+            return this.emetadata.storyAnimation;
+        }
+
+        get animationTextData() {
+            return fieldsToObject()(this.assetData ? this.assetData.fields : []);
+        }
+
+        renderAnimationFrame(animation, el, time) {
+            renderAnimationFrame(animation, el, time);
+        }
+
+        updateAnimationTextBy(animation, data = this.animationTextData) {
+            if (animation && data) {
+                trySetAnimationText(animation.renderer, data);
+            }
+        }
+
+        updateAnimationText() {
+            this.updateAnimationTextBy(this.animation);
+        }
+
+        setupAnimationSourceLoaded() {
+            this.animation.addEventListener('DOMLoaded', () => {
+                this.setSourceLoaded(true);
+                this.fitToCanvas();
+            });
+        }
+
+        setupSourceLoaded() {
+        }
+
+        beginRender() {
+            super.beginRender();
+            this.updateAnimationText();
+        }
+
+        doRender() {
+            super.doRender();
+            this.renderAnimationFrame(this.animation, this.source, this.currentTime);
+        }
+
+        fitToCanvas() {
+            if (this.fitMode !== ACCEPT_MODE_FILL) {
+                super.fitToCanvas();
+                return;
+            }
+            if (!this.hasCanFitToCanvas) {
+                this.fitOverideToCanvas();
+                return;
+            }
+            const { width: cWidth, height: cHeight } = this.movie.canvas;
+            const { width: sWidth, height: sHeight } = this.sourceRealSize;
+            this.destWidth = this.getFitScaleValue(cWidth, 'x');
+            this.destHeight = this.getFitScaleValue(cHeight, 'y');
+            this.destX = 0;
+            this.destY = 0;
+            this.width = this.getFitScaleValue(sWidth, 'x');
+            this.height = this.getFitScaleValue(sHeight, 'y');
+            this.x = 0;
+            this.y = 0;
+        }
+
+        fitOverideToCanvas() {
+            if (!this.fitOverride) {
+                return;
+            }
+            const { width: sWidth, height: sHeight } = this.sourceRealSize;
+            this.destWidth = this.getFitScaleValue(this.fitOverride.width, 'x');
+            this.destHeight = this.getFitScaleValue(this.fitOverride.height, 'y');
+            this.destX = this.getFitScaleValue(this.fitOverride.x, 'x');
+            this.destY = this.getFitScaleValue(this.fitOverride.y, 'y');
+            this.width = this.getFitScaleValue(sWidth, 'x');
+            this.height = this.getFitScaleValue(sHeight, 'y');
+            this.x = 0;
+            this.y = 0;
+        }
+    };
+};
+
+var getMediaSource = (extendFrom) => {
+    return class MediaSourceImpl extends getVisual(extendFrom) {
+        constructor (options) {
+            super(options);
+            this.updateEmetadata('duplicatedSource', null);
+            this.setDuplicatedSource(this.source);
+        }
+
+        get duplicatedSource() {
+            return this.emetadata.duplicatedSource;
+        }
+
+        get hasSourceBuffering() {
+            return this.source.readyState < 2;
+        }
+
+        get fullLoadedSource() {
+            return this.sourceLoaded && !this.hasSourceBuffering;
+        }
+
+        setDuplicatedSource(source) {
+            const el = source.cloneNode();
+            this.updateEmetadata('duplicatedSource', el);
+            this.duplicatedSource.preload = 'metadata';
+            this.duplicatedSource.crossOrigin = 'anonymous';
+            this.duplicatedSource.onloadedmetadata = () => {
+                publish(
+                    this.movie,
+                    'movie.change.layer.onLoadedDuplicatedSource',
+                    { layer: this }
+                );
+            };
+        }
+
+        setupSourceLoaded() {
+            this.source.onloadeddata = () => {
+                this.setSourceLoaded(true);
+                this.fitToCanvas();
+            };
+        }
+    };
+};
+
+var getVideo = (Video) => {
+    return class VideoImpl extends getStoryVisual(getMediaSource(Video)) {
+        constructor (options) {
+            super(options);
+            this.updateEmetadata('storyTargetSource', this.duplicatedSource);
+        }
+
+        get sourceRealSize() {
+            return {
+                width: this.source.videoWidth,
+                height: this.source.videoHeight,
+            };
+        }
+    };
+};
+
+const DEFAULT_FIT_MULTIPLY = 10;
+
+var getMovie = (Movie) => {
+    return class MovieImpl extends Movie {
+        constructor (options) {
+            super(options);
+            this._fitMultipy = DEFAULT_FIT_MULTIPLY;
+            this._acceptRaito = ACCEPT_RAITO_16_9;
+            this.attemptRecording = false;
+        }
+
+        get acceptRaito() {
+            return this._acceptRaito;
+        }
+
+        get acceptRaitoData() {
+            return getAcceptRaitoByType(this.acceptRaito);
+        }
+
+        set acceptRaito(value) {
+            this._acceptRaito = value;
+            this.updateMovieSize(this.acceptRaitoData.size);
+            this.fitToCanvasAll();
+        }
+
+        get fitMulty() {
+            const { recordSize, size } = this.acceptRaitoData;
+            const w = recordSize.x / size.x;
+            const h = recordSize.y / size.y;
+            return Vector2(w, h);
+        }
+
+        get recordFitMulty() {
+            return this.attemptRecording ? this.fitMulty : Vector2(1, 1);
+        }
+
+        updateMovieSize({ x, y }) {
+            this.width = x;
+            this.height = y;
+        }
+
+        fitToCanvasAll() {
+            this.layers.forEach(l => l.fitToCanvas());
+        }
+
+        recordHigh(recordOptions) {
+            const layersSetRecording = () => this.movie.layers
+                .forEach(l => {
+                    l.setEditable(false);
+                    l.fitToCanvas();
+                });
+            const resetToDefault = () => {
+                this.attemptRecording = false;
+                this.updateMovieSize(this.acceptRaitoData.size);
+                layersSetRecording();
+                this.canvas.style.opacity = '';
+            };
+            this.attemptRecording = true;
+            this.updateMovieSize(this.acceptRaitoData.recordSize);
+            layersSetRecording();
+            this.canvas.style.opacity = 0;
+            
+            return this.record(recordOptions)
+                .then((data) => {
+                    resetToDefault();
+                    console.log('data', data);
+                    return data;
+                })
+                .catch(err => {
+                    resetToDefault();
+                    console.error('vd.movie.recordHight', err);
+                    return err;
+                });
+        }
+    };
+};
+
+var mapImplementation = (data) => Object.assign({},
+    data,
+    {
+        layer: {
+            ...data.layer,
+            getIHtmlTitle: (bodymovin) => getHtmlTitle(data.layer.Image, bodymovin),
+            IImage: getImage(data.layer.Image),
+            IVideo: getVideo(data.layer.Video),
+            ITitle: getTitle(data.layer.Image),
+            IBase: getBase(data.layer.Visual),
+        },
+        IMovie: getMovie(data.Movie)
+    }
+);
+
 /**
  * The entry point
  * @module index
  */
-var index = __assign({ Movie: Movie, layer: layers, effect: effects, event: event }, util);
+var index = mapImplementation(__assign({ Movie: Movie, layer: layers, effect: effects, event: event }, util));
 
 module.exports = index;

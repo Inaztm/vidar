@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>video-composite.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#scaleY">scaleY</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">video-composite.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>export const w = 560;
+export const h = 360;
+
+export const Vector2 = (x, y) => ({ x, y });
+
+export const TYPE_MEDIA = 'media';
+export const TYPE_TITLE = 'title';
+export const TYPE_AUDIO = 'audio';
+export const GROUP_TYPES = [TYPE_MEDIA, TYPE_AUDIO, TYPE_TITLE];
+export const HTML_TYPE_IMAGE = 'HTML_TYPE_IMAGE';
+export const HTML_TYPE_VIDEO = 'HTML_TYPE_VIDEO';
+export const HTML_TYPE_AUDIO = 'HTML_TYPE_AUDIO';
+export const DRAGGABLE_TYPE_TRACK_ITEM = 'DRAGGABLE_TYPE_TRACK_ITEM';
+export const DRAGGABLE_TYPE_ASSET = 'DRAGGABLE_TYPE_ASSET';
+export const UPDATE_TRACK_STARTS_TYPE_DROP = 'UPDATE_TRACK_STARTS_TYPE_DROP';
+export const UPDATE_TRACK_STARTS_TYPE_RESIZE = 'UPDATE_TRACK_STARTS_TYPE_RESIZE';
+export const MAGNET_DISTANCE_IN_PIXELS = 50;
+export const HALF_MAGNET_DISTANCE_IN_PIXELS = MAGNET_DISTANCE_IN_PIXELS * .38;
+export const MIN_VOLUME = 0;
+export const MAX_VOLUME = 1;
+export const MAX_VOLUME_FAKE = MAX_VOLUME + 1;
+export const TAB_TYPE_MEDIA = 'media';
+export const TAB_TYPE_TITLE = 'graphics';
+export const TAB_TYPE_AUDIO = 'audio';
+export const TAB_TYPE_SETTINGS = 'settings';
+
+export const ACCEPT_RAITO_16_9 = '16x9';
+export const ACCEPT_RAITO_9_16 = '9x16';
+export const ACCEPT_RAITO_1_1 = '1x1';
+export const ACCEPT_RAITO_4_5 = '4x5';
+export const ACCEPT_RAITO_2_3 = '2x3';
+export const ACCEPT_RAITO_21_9 = '21x9';
+
+export const ACCEPT_RAITO_DEFAULT = ACCEPT_RAITO_9_16;
+
+export const acceptRaitoVariants = [
+    {
+        type: ACCEPT_RAITO_16_9,
+        size: Vector2(558.2222222222222, 314),
+        recordSize: Vector2(1920, 1080),
+    },
+    {
+        type: ACCEPT_RAITO_9_16,
+        size: Vector2(176.625, 314),
+        recordSize: Vector2(1080, 1920),
+    },
+    {
+        type: ACCEPT_RAITO_1_1,
+        size: Vector2(314, 314),
+        recordSize: Vector2(1080, 1080),
+    },
+    {
+        type: ACCEPT_RAITO_4_5,
+        size: Vector2(251.20000000000002, 314),
+        recordSize: Vector2(1080, 1350),
+    },
+    {
+        type: ACCEPT_RAITO_2_3,
+        size: Vector2(209.33333333333331, 314),
+        recordSize: Vector2(1080, 1620),
+    },
+    // { type: ACCEPT_RAITO_21_9, size: { x: 732.6666666666667, y: 314 }},
+];
+
+export const ACCEPT_MODE_FIT = 'fit';
+export const ACCEPT_MODE_FILL = 'fill';
+export const ACCEPT_MODE_lTC = 'ltc';
+export const ACCEPT_MODE_RTC = 'rtc';
+export const ACCEPT_MODE_lBC = 'lbc';
+export const ACCEPT_MODE_RBC = 'rbc';
+
+export const getAcceptRaitoByType = (type) => acceptRaitoVariants
+    .find(t => t.type === type);
+
+export const getVideoCompositeTpl = () => (
+    `
+  &lt;div class="video-composite-popup__close" ng-click="$ctrl.closeAttempt()">
+    test
+    &lt;i class="fa fa-lg fa-times-circle" aria-hidden="true">&lt;/i>
+  &lt;/div>
+  &lt;div class="video-composite-popup" style="position:relative;">
+    &lt;video-composite
+      video-widget="$ctrl.videoWidget"
+      modal-instance="$ctrl.videoCompositeModalInstance"
+    >&lt;/video-composite>
+  &lt;/div>
+  `
+);
+
+export const setupVidar = function(callback) {
+    const isHereScript = document.getElementById('vidar-script');
+    if (!isHereScript) {
+        const script = document.createElement('script');
+        script.id = 'vidar-script';
+        script.onload = () => {
+            // eslint-disable-next-line no-undef
+            window.vd = vd;
+            callback(window.vd);
+        };
+        script.src = 'https://cdn.jsdelivr.net/gh/clabe45/vidar/dist/vidar-iife.js';
+        document.body.appendChild(script);
+    } else {
+        callback(window.vd);
+    }
+};
+
+export const setupSVG = function(callback) {
+    const isHereScript = document.getElementById('svg-script');
+    if (!isHereScript) {
+        const script = document.createElement('script');
+        script.id = 'svg-script';
+        script.onload = () => {
+            // eslint-disable-next-line no-undef
+            window.SVG = SVG;
+            callback(window.SVG);
+        };
+        script.src = 'https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js';
+        document.body.appendChild(script);
+    } else {
+        callback(window.SVG);
+    }
+};
+
+export const setSizeEl = (el, _w = w, _h = h) => {
+    el.width = _w;
+    el.height = _h;
+};
+// eslint-disable-next-line no-unused-vars
+export const createMediaEl = (src, type, _w, _h) => {
+    const el = document.createElement(type);
+    if (_w &amp;&amp; _h) {
+        setSizeEl(el, _w, _h);
+    }
+    el.src = src;
+    el.crossOrigin = 'anonymous';
+    return el;
+};
+export const clampNumber = (min, max, target) => Math.min(Math.max(target, min), max);
+export const getPositionInScrollEl = (el, e) => {
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX + el.scrollLeft - rect.left;
+    const y = e.clientY + el.scrollTop - rect.top;
+    return { x, y, rect };
+};
+export const getPositionWithRects = (el, el2) => {
+    const rect = el.getBoundingClientRect();
+    const rect2 = el2.getBoundingClientRect();
+    const x = rect2.left - rect.left;
+    const y = rect2.top - rect.top;
+    return { x, y, rect, rect2 };
+};
+export const getXOffset = (el, e) => {
+    return getPositionInScrollEl(el, e).x || 0;
+};
+export const whenMinValidate = (target, min) => target &lt;= min;
+export const whenMinMaxValidate = (target, min, max) => whenMinValidate(target, max) &amp;&amp; target > min;
+export const chooseBetweenFeatures = (target, options, callbacks = {}) => {
+    const feature = options.find(el => Array.isArray(el[0]) ? el[0][0] === target : el[0] === target);
+    const runBefore = (success) => callbacks.beforeCallback ? callbacks.beforeCallback(success) : null;
+    const runAfter = (success) => callbacks.afterCallback ? callbacks.afterCallback(success) : null;
+    const onFailure = () => {
+        runBefore(false);
+        runAfter(false);
+    };
+    if (feature) {
+        const featureTarget = feature[0];
+        const isMultipleFeature = Array.isArray(featureTarget);
+        if ((isMultipleFeature &amp;&amp; featureTarget[1]) || !isMultipleFeature) {
+            runBefore(true);
+            feature[1]();
+            runAfter(true);
+        } else {
+            onFailure();
+        }
+    } else {
+        onFailure();
+    }
+};
+// export const zoomLevelValidate = (level) => {
+//     let time = 20;
+//     let widthOffset = 50;
+//     const _set = (_time, _widthOffset) => {
+//         time = _time;
+//         widthOffset = _widthOffset;
+//     };
+
+//     chooseBetweenFeatures(true, [
+//         [whenMinValidate(level, 1), () => _set(0.08, 20)],
+//         [whenMinValidate(level, 2), () => _set(0.25, 19)],
+//         [whenMinValidate(level, 3), () => _set(0.75, 18)],
+//         [whenMinValidate(level, 4), () => _set(1, 18)],
+//         [whenMinValidate(level, 5), () => _set(5, 18)],
+//         [whenMinValidate(level, 6), () => _set(15, 18)],
+//         [whenMinValidate(level, 7), () => _set(20, 18)],
+//         [whenMinValidate(level, 8), () => _set(30, 18)],
+//         [whenMinValidate(level, 9), () => _set(45, 18)],
+//         [whenMinValidate(level, 10), () => _set(60, 18)],
+//         [whenMinValidate(level, 11), () => _set(80, 18)],
+//         [whenMinValidate(level, 12), () => _set(100, 18)],
+//         [whenMinValidate(level, 13), () => _set(120, 18)],
+//         [whenMinValidate(level, 14), () => _set(140, 18)],
+//         [whenMinValidate(level, 15), () => _set(160, 18)],
+//         [whenMinValidate(level, 16), () => _set(180, 18)],
+//         [whenMinValidate(level, 17), () => _set(200, 18)],
+//         [whenMinValidate(level, 18), () => _set(220, 18)],
+//         [whenMinValidate(level, 19), () => _set(240, 20.5)],
+//         [whenMinValidate(level, 20), () => _set(280, 25)],
+//         [whenMinValidate(level, 21), () => _set(300, 30)],
+//         [whenMinValidate(level, 22), () => _set(340, 35)],
+//         [whenMinValidate(level, 23), () => _set(360, 53)],
+//     ]);
+
+//     return { time, widthOffset };
+// };
+
+export const zoomLevelValidate = (time) => {
+    let step = 0;
+    const setValues = (_step) => step = _step;
+
+    chooseBetweenFeatures(true, [
+        [whenMinValidate(time, 1), () => setValues(0.5)],
+        [whenMinValidate(time, 10), () => setValues(1)],
+        [whenMinMaxValidate(time, 10, 30), () => setValues(5)],
+        [whenMinMaxValidate(time, 30, 100), () => setValues(10)],
+        [whenMinMaxValidate(time, 100, 240), () => setValues(18)],
+        [time > 240, () => setValues(20)],
+    ]);
+
+    return { step };
+};
+
+export const pad = function(num, size) { return ('000' + num).slice(size * -1); };
+
+export const sec2time = (timeInSeconds) => {
+    const time = parseFloat(timeInSeconds).toFixed(3);
+    const hours = Math.floor(time / 60 / 60);
+    const minutes = Math.floor(time / 60) % 60;
+    const seconds = Math.floor(time - minutes * 60);
+    const milliseconds = time.slice(-3);
+    const toText = (withMilliseconds = true, millisecondsSeparator = '.') => {
+        const firstPart = pad(hours, 2) + ':' + pad(minutes, 2) + ':' + pad(seconds, 2);
+        if (withMilliseconds) {
+            const millisecondsText = `${millisecondsSeparator}${pad(milliseconds, 3)}`;
+            return firstPart + millisecondsText;
+        }
+        return firstPart;
+    };
+    const secondsMillisecondsText = (millisecondsSeparator = '.') => {
+        const millisecondsText = `${millisecondsSeparator}${pad(milliseconds, 3)}`;
+        return pad(seconds, 2) + millisecondsText;
+    };
+    const getTextWithFrames = (separator = '.', framesPerSeconds) => {
+        const frames = Math.floor(milliseconds * (framesPerSeconds / 1000));
+        const text = `${separator}${pad(frames, 2)}`;
+        return text;
+    };
+    const getTimeWithFrames = (separator = '.', framesPerSeconds) => {
+        return toText(false) + getTextWithFrames(separator, framesPerSeconds);
+    };
+    const getSecondsWithFrames = (separator = '.', framesPerSeconds) => {
+        return pad(seconds, 2) + getTextWithFrames(separator, framesPerSeconds);
+    };
+
+    return {
+        time,
+        hours,
+        minutes,
+        seconds,
+        milliseconds,
+        toText,
+        secondsMillisecondsText,
+        getTextWithFrames,
+        getTimeWithFrames,
+        getSecondsWithFrames
+    };
+};
+
+const DEFAULT_FPS = 24;
+export class ConvertSecondsToTimecode {
+    static pad(input) {
+        return (input &lt; 10) ? '0' + input : input;
+    }
+    static toJson(seconds, fps = DEFAULT_FPS) {
+        const time = [
+            this.pad(Math.floor(seconds / 3600)),
+            this.pad(Math.floor(seconds % 3600 / 60)),
+            this.pad(Math.floor(seconds % 60)),
+        ].join(':');
+        const frame = String(this.pad(Math.floor(seconds * fps % fps)));
+        return { time, frame };
+    }
+
+    static toString(seconds, fps) {
+        const { time, frame } = this.toJson(seconds, fps);
+        return [time, frame].join(':');
+    }
+}
+
+export const convertTimeCodeToSeconds = (timeString, framerate = 24) => {
+    const [hoursS, minutesS, secondsS, framesS] = timeString.split(':');
+    const hours = parseInt(hoursS) * 60 * 60;
+    const minutes = parseInt(minutesS) * 60;
+    const seconds = parseInt(secondsS);
+    const frames = parseInt(framesS) * (1 / framerate);
+    const totalTime = hours + minutes + seconds + frames;
+    return totalTime;
+};
+
+export const getElType = (instance) => {
+    if (instance instanceof HTMLImageElement) {
+        return HTML_TYPE_IMAGE;
+    }
+    if (instance instanceof HTMLVideoElement) {
+        return HTML_TYPE_VIDEO;
+    }
+    if (instance instanceof HTMLAudioElement) {
+        return HTML_TYPE_AUDIO;
+    }
+    return null;
+};
+
+export const elTypeIsImage = (instance) => getElType(instance) === HTML_TYPE_IMAGE;
+export const elTypeIsVideo = (instance) => getElType(instance) === HTML_TYPE_VIDEO;
+export const elTypeIsAudio = (instance) => getElType(instance) === HTML_TYPE_AUDIO;
+export const elTypeIsMedia = (instance) => elTypeIsVideo(instance) || elTypeIsAudio(instance);
+export const isAssetType = (layer, type) => layer.assetType === type;
+
+export const duplicateLayer = (layer) => {
+    // eslint-disable-next-line max-len
+    const { source, startTime, duration, x, y, width, height, opacity, background, border, destHeight, destWidth, destX, destY, sourceHeight, sourceWidth, sourceX, sourceY, sourceStartTime, playbackRate, muted, volume } = layer;
+    const baseOptions = { startTime, duration };
+    const sourceBaseOptions = Object.assign({}, { source });
+    // eslint-disable-next-line max-len
+    const visualOptions = Object.assign({}, baseOptions, { x, y, width, height, opacity, background, border, destHeight, destWidth, destX, destY, sourceHeight, sourceWidth, sourceX, sourceY });
+    const sourceBaseVisualOptions = Object.assign({}, sourceBaseOptions, visualOptions);
+    const mediaOptions = Object.assign({}, { sourceStartTime, playbackRate, muted, volume });
+    let duplicatedLayer = null;
+    if (elTypeIsImage(source)) {
+        duplicatedLayer = new window.vd.layer.Image(sourceBaseVisualOptions);
+    }
+    if (elTypeIsVideo(source)) {
+        const forMedia = Object.assign({}, sourceBaseVisualOptions, mediaOptions);
+        duplicatedLayer = new window.vd.layer.Video(forMedia);
+    }
+    if (elTypeIsAudio(source)) {
+        const forAudio = Object.assign({}, sourceBaseOptions, mediaOptions);
+        duplicatedLayer = new window.vd.layer.Audio(forAudio);
+    }
+    return duplicatedLayer;
+};
+
+export const runTimeout = (instance, time, callback) => {
+    if (instance) {
+        clearTimeout(instance);
+    }
+    if (time === 0) {
+        callback();
+    } else {
+        instance = setTimeout(callback, time);
+    }
+};
+
+export const hasDraggableAssetType = (type) => type === DRAGGABLE_TYPE_ASSET;
+export const hasDraggableTrackItemType = (type) => type === DRAGGABLE_TYPE_TRACK_ITEM;
+
+export const fitIn = (canvas, el) => {
+    const wrh = el.width / el.height;
+    let width = canvas.width;
+    let height = width / wrh;
+    if (height > canvas.height) {
+        height = canvas.height;
+        width = height * wrh;
+    }
+    return { width, height };
+};
+
+export const fitImageBy = ({ width: blockWidth, height: blockHeight }, { width: imgWidth, height: imgHeight }) => {
+    const imageAspectRatio = imgWidth / imgHeight;
+    const blockAspectRatio = blockWidth / blockHeight;
+    let height = blockHeight;
+    let width = blockWidth;
+    let x = 0;
+    let y = 0;
+
+    if (imageAspectRatio &lt; blockAspectRatio) {
+        width = imgWidth * (height / imgHeight);
+        x = (blockWidth - width) / 2;
+    } else if (imageAspectRatio > blockAspectRatio) {
+        height = imgHeight * (width / imgWidth);
+        y = (blockHeight - height) / 2;
+    }
+
+    return { x, y, width, height };
+};
+
+export const fitImageOn = (block, imageObj) => {
+    const { x, y, width, height } = fitImageBy(block, imageObj);
+    return { x, y, destWidth: width, destHeight: height };
+};
+
+export const containImage = (content, container, offsetLeft = 0.5, offsetTop = 0.5) => {
+    const contentRatio = content.width / content.height;
+    const containerRatio = container.width / container.height;
+    let resultHeight;
+    let resultWidth;
+    if (contentRatio > containerRatio) {
+        resultHeight = container.height;
+        resultWidth = container.height * contentRatio;
+    } else {
+        resultWidth = container.width;
+        resultHeight = container.width / contentRatio;
+    }
+    return {
+        sourceWidth: content.width,
+        sourceHeight: content.height,
+        destWidth: resultWidth,
+        destHeight: resultHeight,
+        destX: (container.width - resultWidth) * offsetLeft,
+        destY: (container.height - resultHeight) * offsetTop
+    };
+};
+
+export const scaleTo = (target, container, hasFill = false) => {
+    const { w: tW, h: tH } = target;
+    const { w: cW, h: cH } = container;
+    // get the scale
+    const calcHundle = hasFill ? Math.max : Math.min;
+    const scale = calcHundle(cW / tW, cH / tH);
+    // get the top left position of the image
+    const x = (cW / 2) - (tW / 2) * scale;
+    const y = (cH / 2) - (tH / 2) * scale;
+    const width = tW * scale;
+    const height = tH * scale;
+    return {
+        destX: x,
+        destY: y,
+        destWidth: width,
+        destHeight: height,
+        x: 0,
+        y: 0,
+        width: tW,
+        height: tH,
+    };
+};
+
+export const apply2Options = (first, second) => Object.assign({}, first, second);
+
+export const saveByteArray = () => {
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style = 'display: none';
+    return (blob, name) => {
+        const url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = name;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+};
+
+export const getContainerData = (container) => {
+    const w = container.clientWidth; // width
+    const halfW = w * 0.5; // width
+    const left = container.scrollLeft; // scroll left
+    const top = container.scrollTop; // scroll top
+    const offsetLeft = left + w * 2.5; // scroll left offset width
+    const rOffsetLeft = clampNumber(0, Infinity, left - w * 2); // scroll left offset minus width
+    return { w, halfW, left, top, offsetLeft, rOffsetLeft };
+};
+
+export const _start = (l) => l.startTime;
+export const _sStart = (l) => l.sourceStartTime || 0;
+export const _end = (l) => l.duration;
+export const _sEnd = (l) => l.source.duration;
+export const _full = (l) => _start(l) + _end(l);
+export const _dHalf = (l) => _end(l) * 0.5;
+export const _half = (l) => _full(l) - _dHalf(l);
+
+export const dSource = (layer) => layer.duplicatedSource;
+
+export const vdEvent = ({
+    subscribe: (m, e, callback) => {
+        if (window.vd) window.vd.event.subscribe(m, e, callback);
+    },
+    publish: (m, e, callback) => {
+        if (window.vd) window.vd.event.publish(m, e, callback);
+    }
+});
+
+export const storyTarget = (layer) => layer.storyTargetSource;
+
+export const isSourceReadyStateValid = (source) => source.readyState > 0;
+export const isDuplicatedSourceReadyStateValid = (layer) => dSource(layer) &amp;&amp; isSourceReadyStateValid(dSource(layer));
+
+export const _uuid = (layer) => layer.uuid;
+
+export const _prevent = (e) => (success) => {
+    if (success) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+};
+
+/**
+ * Scales the waveform data for drawing on a canvas context.
+ *
+ * @todo Assumes 8-bit waveform data (-128 to 127 range)
+ *
+ * @param {Number} amplitude The waveform data point amplitude.
+ * @param {Number} height The height of the waveform, in pixels.
+ * @param {Number} scale Amplitude scaling factor.
+ * @returns {Number} The scaled waveform data point.
+ */
+
+export const scaleY = function(amplitude, height, scale) {
+    const y = -(height - 1) * (amplitude * scale + 128) / 255 + (height - 1);
+    return clampNumber(0, height - 1, Math.floor(y));
+};
+
+export const mapFrame = (frame = '00') => frame;
+
+export const getDBScale = () => ([
+    { volume: 1, scale: 10.0 },
+    { volume: 0.95, scale: 8.7 },
+    { volume: 0.90, scale: 7.3 },
+    { volume: 0.85, scale: 5.8 },
+    { volume: 0.80, scale: 4.2 },
+    { volume: 0.75, scale: 2.5 },
+    { volume: 0.70, scale: 0.7 },
+    { volume: 0.65, scale: -1.2 },
+    { volume: 0.60, scale: -3.3 },
+    { volume: 0.55, scale: -5.6 },
+    { volume: 0.50, scale: -8.1 },
+    { volume: 0.45, scale: -10. },
+    { volume: 0.40, scale: -13. },
+    { volume: 0.35, scale: -17. },
+    { volume: 0.30, scale: -21. },
+    { volume: 0.25, scale: -26. },
+    { volume: 0.20, scale: -31. },
+    { volume: 0.15, scale: -39. },
+    { volume: 0.10, scale: -50. },
+    { volume: 0.5, scale: -68. },
+    { volume: 0, scale: 0 }
+]);</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.10</a> on Mon Feb 14 2022 11:55:00 GMT+0200 (Eastern European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
