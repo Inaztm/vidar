@@ -3643,7 +3643,7 @@ var getTitle = (Image) => {
 var getHtmlTitle = (Image, bodymovin) => {
     return class HtmlTitleImpl extends getTitle(Image) {
         constructor (options) {
-            const { animationData } = HtmlTitle.extractOptions(options, ['animationData']);
+            const { animationData } = this.extractOptions(options, ['animationData']);
             super(options);
             this.updateEmetadata('animation', createAnimation(bodymovin, { animationData }));
             this.updateEmetadata('storyAnimation', createAnimation(bodymovin, { animationData }));
